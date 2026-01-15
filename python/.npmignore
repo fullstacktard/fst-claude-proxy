@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Claude logs
+.claude/
+
+# Test files
+tests/
+*.test.py
+
+# Development files
+.git/
+.gitignore

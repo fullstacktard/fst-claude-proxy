@@ -1,0 +1,53 @@
+{
+  "name": "claude-proxy",
+  "version": "0.2.0",
+  "description": "LiteLLM proxy with per-agent model routing and OAuth token injection for Claude",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fullstacktard/claude-proxy.git"
+  },
+  "homepage": "https://github.com/fullstacktard/claude-proxy#readme",
+  "bugs": {
+    "url": "https://github.com/fullstacktard/claude-proxy/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "bin": {
+    "claude-proxy": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./python": "./python/"
+  },
+  "files": ["dist", "python", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run"
+  },
+  "keywords": ["litellm", "claude", "proxy", "agent-routing", "oauth", "anthropic", "llm", "ai", "model-routing"],
+  "author": "fullstacktard",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

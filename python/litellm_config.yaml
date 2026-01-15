@@ -1,0 +1,146 @@
+# claude-proxy LiteLLM Configuration
+# ======================================
+# This file configures LiteLLM proxy with:
+# - Model aliases (haiku/sonnet/opus)
+# - Full model name mappings
+# - Alternative providers for routing
+#
+# Custom hooks are registered via server.py, not in this file.
+
+litellm_settings:
+  # Enable streaming for all requests
+  stream_response: true
+
+  # Drop unsupported parameters instead of raising errors
+  drop_params: true
+
+  # Enable verbose logging (override with DEBUG=true env var)
+  set_verbose: false
+
+  # Request timeout in seconds
+  request_timeout: 300
+
+  # Maximum tokens (can be overridden per-model)
+  max_tokens: 8192
+
+  # Custom callbacks for agent routing and OAuth
+  # These are loaded from the claude_proxy package
+  callbacks: claude_proxy.hooks.callbacks.proxy_callbacks
+
+# Model Definitions
+# Each entry creates a model alias that can be used in requests.
+# The 'model_name' is what clients request, 'model' in litellm_params
+# is the actual provider model.
+model_list:
+  # ============================================================================
+  # Simple Aliases - Use these in CLAUDE_MODEL environment variable
+  # ============================================================================
+  - model_name: haiku
+    litellm_params:
+      model: claude-3-5-haiku-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: sonnet
+    litellm_params:
+      model: claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  - model_name: opus
+    litellm_params:
+      model: claude-opus-4-5-20251101
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # ============================================================================
+  # Full Model Names - For explicit model selection
+  # ============================================================================
+
+  # Claude 3.5 Haiku
+  - model_name: claude-3-5-haiku-20241022
+    litellm_params:
+      model: claude-3-5-haiku-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # Claude Sonnet 4
+  - model_name: claude-sonnet-4-20250514
+    litellm_params:
+      model: claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # Claude Opus 4.5
+  - model_name: claude-opus-4-5-20251101
+    litellm_params:
+      model: claude-opus-4-5-20251101
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # Claude 3.5 Sonnet (older)
+  - model_name: claude-3-5-sonnet-20241022
+    litellm_params:
+      model: claude-3-5-sonnet-20241022
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # ============================================================================
+  # Alternative Providers - For fallback routing
+  # ============================================================================
+
+  # OpenAI GPT-4o
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o-2024-08-06
+      api_key: os.environ/OPENAI_API_KEY
+
+  # OpenAI GPT-4o Mini
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: gpt-4o-mini-2024-07-18
+      api_key: os.environ/OPENAI_API_KEY
+
+  # OpenAI o3 (reasoning model)
+  - model_name: o3
+    litellm_params:
+      model: o3
+      api_key: os.environ/OPENAI_API_KEY
+
+  # ============================================================================
+  # Z-AI Provider - Alternative Claude access via z.ai
+  # Uses Anthropic-compatible endpoint at api.z.ai/api/anthropic
+  # Z-AI maps requests to GLM models (glm-4.5-air for haiku, glm-4.7 for others)
+  # ============================================================================
+
+  # Z-AI Haiku equivalent (uses GLM-4.5-air)
+  - model_name: zai-haiku
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+      api_base: https://api.z.ai/api/anthropic
+      api_key: os.environ/ZAI_API_KEY
+
+  # Z-AI Sonnet equivalent (uses GLM-4.7)
+  - model_name: zai-sonnet
+    litellm_params:
+      model: anthropic/claude-sonnet-4-20250514
+      api_base: https://api.z.ai/api/anthropic
+      api_key: os.environ/ZAI_API_KEY
+
+  # Z-AI Opus equivalent (uses GLM-4.7)
+  - model_name: zai-opus
+    litellm_params:
+      model: anthropic/claude-opus-4-5-20251101
+      api_base: https://api.z.ai/api/anthropic
+      api_key: os.environ/ZAI_API_KEY
+
+# Router Settings (optional)
+# These settings configure the LiteLLM Router for load balancing and failover.
+router_settings:
+  # Simple round-robin routing
+  routing_strategy: simple-shuffle
+
+  # Number of retries on failure
+  num_retries: 3
+
+  # Seconds to wait before retry
+  retry_after: 5
+
+  # Allow failed requests
+  allowed_fails: 3
+
+  # Cooldown time in seconds for failed models
+  cooldown_time: 60

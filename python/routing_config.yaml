@@ -1,0 +1,108 @@
+# claude-proxy Routing Configuration
+# =======================================
+# This file configures agent routing, fallback chains, and retry logic.
+# Agent routing is based on prompt fingerprinting (SHA256 hash of agent prompt).
+
+# Default model when no routing rule matches
+default_model: sonnet
+
+# ============================================================================
+# Fallback Chains
+# ============================================================================
+# Define ordered lists of models to try on failure.
+# If the first model fails, the next in the chain is tried.
+fallback_chains:
+  # Default Claude fallback chain
+  claude_chain:
+    - claude-sonnet-4-20250514
+    - claude-3-5-haiku-20241022
+    - gpt-4o  # External fallback
+
+  # High-capability chain for complex tasks
+  opus_chain:
+    - claude-opus-4-5-20251101
+    - claude-sonnet-4-20250514
+    - gpt-4o
+
+  # Cost-optimized chain
+  budget_chain:
+    - claude-3-5-haiku-20241022
+    - gpt-4o-mini
+    - claude-sonnet-4-20250514
+
+# ============================================================================
+# Retry Configuration
+# ============================================================================
+retry:
+  # Maximum number of retry attempts
+  max_retries: 3
+
+  # Initial delay between retries (seconds)
+  retry_delay_seconds: 1
+
+  # Whether to use exponential backoff (2^attempt * delay)
+  exponential_backoff: true
+
+  # Maximum delay between retries (seconds)
+  max_delay_seconds: 30
+
+# ============================================================================
+# Agent-Specific Model Overrides
+# ============================================================================
+# Map agent names to target models.
+# These are used when the agent hash registry maps a hash to an agent name
+# instead of directly to a model.
+#
+# Agent detection happens via prompt fingerprinting (SHA256 hash).
+# The actual hash-to-model mappings are in registry/agent_hashes.json.
+agent_routing:
+  # High-capability agents -> opus (complex reasoning)
+  backend-engineer: opus
+  frontend-engineer: opus
+  research: opus
+  cto-architect: opus
+  devops-engineer: opus
+
+  # Standard agents -> sonnet (general purpose)
+  task-maker: sonnet
+  task-reviewer: sonnet
+  feature-planner: sonnet
+  general-purpose: sonnet
+
+  # Simple/focused agents -> haiku (fast, cost-effective)
+  css-fixer: haiku
+  documentation-writer: haiku
+  test-writer: haiku
+
+  # Alternative provider routing (for testing/comparison)
+  external-reviewer: gpt-4o
+
+# ============================================================================
+# Rate Limit Configuration
+# ============================================================================
+# Provider-specific rate limits for request throttling.
+# These are advisory - actual enforcement depends on provider responses.
+rate_limits:
+  anthropic:
+    requests_per_minute: 50
+    tokens_per_minute: 100000
+
+  openai:
+    requests_per_minute: 500
+    tokens_per_minute: 150000
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+logging:
+  # Log all routing decisions (useful for debugging)
+  log_routing_decisions: true
+
+  # Log request/response sizes
+  log_request_sizes: false
+
+  # Log timing information
+  log_timing: true
+
+  # Log unknown agent hashes (helps build registry)
+  log_unknown_agents: true

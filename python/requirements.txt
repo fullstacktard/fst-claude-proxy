@@ -1,0 +1,8 @@
+# fst-claude-proxy Python dependencies
+litellm[proxy]>=1.50.0
+pyyaml>=6.0
+httpx>=0.25.0
+uvicorn>=0.24.0
+python-dotenv>=1.0.0
+click>=8.0.0
+types-PyYAML>=6.0

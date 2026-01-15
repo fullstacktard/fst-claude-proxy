@@ -1,0 +1,41 @@
+# Compiled output
+dist/
+*.js
+!src/**/*.js
+*.d.ts
+*.js.map
+*.d.ts.map
+
+# Dependencies
+node_modules/
+__pycache__/
+*.egg-info/
+.Python
+*.pyc
+*.pyo
+venv/
+env/
+.venv/
+.eggs/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test/Coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.tox/

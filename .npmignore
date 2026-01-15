@@ -1,0 +1,19 @@
+# Source files (dist is published)
+src/
+tsconfig.json
+
+# Python cache and dev files
+python/__pycache__/
+python/**/__pycache__/
+python/.claude/
+python/*.pyc
+python/**/*.pyc
+
+# Test files
+*.test.ts
+tests/
+
+# Development files
+.git/
+.gitignore
+node_modules/

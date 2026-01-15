@@ -1,0 +1,165 @@
+{
+  "mappings": {
+    "e6e8b2774e3c24e0": "opus",
+    "0e23da217b2b88af": "sonnet",
+    "be91f23334ee793b": "haiku",
+    "a344f123cff90963": "opus",
+    "fded6adc0cdd9ff7": "opus",
+    "b524e11a7d97bf8b": "haiku",
+    "55b6153807f48312": "sonnet",
+    "d1f10597333d046a": "opus",
+    "0778c97f402c61cc": "haiku",
+    "5d1b5bd28b966039": "opus",
+    "a397171ff4e892c2": "opus",
+    "19e1ff87b7a86eae": "sonnet",
+    "ad82a25bf16f0ac1": "sonnet",
+    "59af80b5ce8e458f": "opus",
+    "40d71506356f6cad": "opus",
+    "99654186e4605691": "haiku",
+    "3807f9106edca563": "opus",
+    "2b57d88f46d0b85b": "opus",
+    "60d75bd0198dd6fd": "sonnet",
+    "327281016cecc4f5": "opus",
+    "dcf48ba289d5b3a4": "opus",
+    "5c24a990201ca64c": "sonnet",
+    "00f20fdd8d883edb": "opus",
+    "8cbaa78d8d0b826f": "opus",
+    "58365078e6c2b273": "sonnet",
+    "b18588d8bd756fed": "opus",
+    "5d8fb20d0d614eef": "opus",
+    "3ff1a673f7b521ef": "opus",
+    "9e01271aa6dda4c7": "opus"
+  },
+  "metadata": {
+    "description": "Agent hash to model routing table. Hashes are SHA256[:16] of agent prompts (excluding Notes: section).",
+    "version": "1.0.0",
+    "updated_at": "2026-01-09T00:00:00Z",
+    "agent_count": 29,
+    "default_model": "opus",
+    "instructions": [
+      "This file maps agent prompt hashes to target model names.",
+      "Regenerate with: claude-workflow generate-agent-hashes",
+      "Or use: claude-workflow generate-agent-hashes",
+      "",
+      "Model names must match entries in litellm_config.yaml model_list"
+    ]
+  },
+  "agent_info": {
+    "Explore": {
+      "hash": "e6e8b2774e3c24e0",
+      "model": "opus"
+    },
+    "agent-analyzer": {
+      "hash": "0e23da217b2b88af",
+      "model": "sonnet"
+    },
+    "auto-fixer": {
+      "hash": "be91f23334ee793b",
+      "model": "haiku"
+    },
+    "backend-engineer": {
+      "hash": "a344f123cff90963",
+      "model": "opus"
+    },
+    "backlog-plan-generator": {
+      "hash": "fded6adc0cdd9ff7",
+      "model": "opus"
+    },
+    "cleanup-agent": {
+      "hash": "b524e11a7d97bf8b",
+      "model": "haiku"
+    },
+    "code-reviewer": {
+      "hash": "55b6153807f48312",
+      "model": "sonnet"
+    },
+    "config-setup-agent": {
+      "hash": "d1f10597333d046a",
+      "model": "opus"
+    },
+    "css-fixer": {
+      "hash": "0778c97f402c61cc",
+      "model": "haiku"
+    },
+    "css-resolution-planner": {
+      "hash": "5d1b5bd28b966039",
+      "model": "opus"
+    },
+    "cto-architect": {
+      "hash": "a397171ff4e892c2",
+      "model": "opus"
+    },
+    "debugger": {
+      "hash": "19e1ff87b7a86eae",
+      "model": "sonnet"
+    },
+    "devops-engineer": {
+      "hash": "ad82a25bf16f0ac1",
+      "model": "sonnet"
+    },
+    "feature-planner": {
+      "hash": "59af80b5ce8e458f",
+      "model": "opus"
+    },
+    "frontend-engineer": {
+      "hash": "40d71506356f6cad",
+      "model": "opus"
+    },
+    "lint-fixer": {
+      "hash": "99654186e4605691",
+      "model": "haiku"
+    },
+    "lint-resolution-planner": {
+      "hash": "3807f9106edca563",
+      "model": "opus"
+    },
+    "pr-document-maker": {
+      "hash": "2b57d88f46d0b85b",
+      "model": "opus"
+    },
+    "qa-engineer": {
+      "hash": "60d75bd0198dd6fd",
+      "model": "sonnet"
+    },
+    "qa-resolution-planner": {
+      "hash": "327281016cecc4f5",
+      "model": "opus"
+    },
+    "research": {
+      "hash": "dcf48ba289d5b3a4",
+      "model": "opus"
+    },
+    "skill-analyzer": {
+      "hash": "5c24a990201ca64c",
+      "model": "sonnet"
+    },
+    "style-guide-generator": {
+      "hash": "00f20fdd8d883edb",
+      "model": "opus"
+    },
+    "task-maker": {
+      "hash": "8cbaa78d8d0b826f",
+      "model": "opus"
+    },
+    "task-reviewer": {
+      "hash": "58365078e6c2b273",
+      "model": "sonnet"
+    },
+    "task-status-auditor": {
+      "hash": "b18588d8bd756fed",
+      "model": "opus"
+    },
+    "v0-planner": {
+      "hash": "5d8fb20d0d614eef",
+      "model": "opus"
+    },
+    "v0-ui-generator": {
+      "hash": "3ff1a673f7b521ef",
+      "model": "opus"
+    },
+    "workflow-aggregator": {
+      "hash": "9e01271aa6dda4c7",
+      "model": "opus"
+    }
+  }
+}
