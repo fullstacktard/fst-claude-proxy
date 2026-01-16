@@ -39,3 +39,6 @@ coverage/
 htmlcov/
 .pytest_cache/
 .tox/
+
+# Local-only files (not for git/npm publishing)
+python/fst_claude_proxy/hooks/callbacks_local.py

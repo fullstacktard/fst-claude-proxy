@@ -1,6 +1,6 @@
 {
   "name": "claude-proxy",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "LiteLLM proxy with per-agent model routing and OAuth token injection for Claude",
   "repository": {
     "type": "git",
@@ -26,7 +26,14 @@
     },
     "./python": "./python/"
   },
-  "files": ["dist", "python", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "python",
+    "!python/fst_claude_proxy/hooks/callbacks_local.py",
+    "!python/claude_proxy/hooks/callbacks_local.py",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -34,7 +41,17 @@
     "prepublishOnly": "npm run build",
     "test": "vitest run"
   },
-  "keywords": ["litellm", "claude", "proxy", "agent-routing", "oauth", "anthropic", "llm", "ai", "model-routing"],
+  "keywords": [
+    "litellm",
+    "claude",
+    "proxy",
+    "agent-routing",
+    "oauth",
+    "anthropic",
+    "llm",
+    "ai",
+    "model-routing"
+  ],
   "author": "fullstacktard",
   "license": "MIT",
   "dependencies": {

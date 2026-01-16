@@ -17,3 +17,6 @@ tests/
 .git/
 .gitignore
 node_modules/
+
+# Local-only files (not for npm publishing)
+python/fst_claude_proxy/hooks/callbacks_local.py

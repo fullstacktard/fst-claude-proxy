@@ -14,18 +14,10 @@ import logging
 import os
 import json
 import hashlib
-import platform
 import uuid
 from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
-
-# Claude Code identification headers - REQUIRED for OAuth to work
-# Anthropic validates that OAuth requests match Claude Code's request signature
-CLAUDE_CODE_VERSION = "2.1.5"
-CLAUDE_CODE_USER_AGENT = f"claude-cli/{CLAUDE_CODE_VERSION} (external, cli)"
-# Beta headers must match what Claude Code sends
-CLAUDE_CODE_BETA_HEADERS = "oauth-2025-04-20,interleaved-thinking-2025-05-14,prompt-caching-2024-07-31,max-tokens-3-5-sonnet-2024-07-15,pdfs-2024-09-25,token-efficient-tools-2025-02-19"
 
 # Z-AI model mapping (zai-* prefix to actual Anthropic model names)
 ZAI_MODEL_MAP = {
@@ -334,13 +326,7 @@ class FstClaudeProxyCallbacks(CustomLogger):
 
         Modifies request data for:
         1. Agent routing - check system prompt hash, route to configured model
-        2. OAuth injection - add OAuth token and Claude Code headers for Anthropic models
-
-        OAuth Implementation Notes (from Crush/ccproxy research):
-        - Anthropic validates OAuth requests match Claude Code's exact signature
-        - Must include: user-agent, x-app, anthropic-beta, Stainless headers
-        - Must NOT include x-api-key header (conflicts with OAuth)
-        - Must include metadata.user_id in request body
+        2. OAuth injection - add OAuth token for Anthropic models
         """
         logger.info(f"[callbacks] async_pre_call_hook called for model={data.get('model')}")
         try:
@@ -378,48 +364,16 @@ class FstClaudeProxyCallbacks(CustomLogger):
             if is_claude_model and is_direct_anthropic:
                 oauth_token, user_id, account_uuid = load_oauth_credentials()
                 if oauth_token:
-                    # Initialize extra_headers if not present
-                    if "extra_headers" not in data:
-                        data["extra_headers"] = {}
-
-                    # ===== CRITICAL: Claude Code Identification Headers =====
-                    # Anthropic validates OAuth requests match Claude Code's signature
-                    # Reference: Crush v0.19.0, ccproxy, Claude Code CHANGELOG
-
-                    # 1. User-Agent - Must match Claude Code exactly
-                    data["extra_headers"]["user-agent"] = CLAUDE_CODE_USER_AGENT
-
-                    # 2. App identifier
-                    data["extra_headers"]["x-app"] = "cli"
-
-                    # 3. Browser access flag (required for OAuth)
-                    data["extra_headers"]["anthropic-dangerous-direct-browser-access"] = "true"
-
-                    # 4. Beta features header - CRITICAL for OAuth
-                    data["extra_headers"]["anthropic-beta"] = CLAUDE_CODE_BETA_HEADERS
-
-                    # ===== Stainless SDK Headers =====
-                    # These headers are added by the Anthropic SDK and validated
-                    data["extra_headers"]["x-stainless-arch"] = platform.machine() or "unknown"
-                    data["extra_headers"]["x-stainless-lang"] = "js"
-                    data["extra_headers"]["x-stainless-os"] = platform.system().lower() or "unknown"
-                    data["extra_headers"]["x-stainless-package-version"] = CLAUDE_CODE_VERSION
-                    data["extra_headers"]["x-stainless-retry-count"] = "0"
-                    data["extra_headers"]["x-stainless-runtime"] = "node"
-                    data["extra_headers"]["x-stainless-runtime-version"] = "v22.0.0"
-
-                    # ===== OAuth Token =====
-                    # Set as Authorization header via api_key (LiteLLM handles the Bearer prefix)
+                    # Set OAuth token for authorization
                     data["api_key"] = oauth_token
 
-                    # ===== Request Body: metadata.user_id =====
-                    # Required for OAuth - identifies the user making the request
+                    # Set metadata.user_id for OAuth requests
                     metadata_user_id = f"user_{user_id}_account_{account_uuid}_session_{_SESSION_ID}"
                     if "metadata" not in data:
                         data["metadata"] = {}
                     data["metadata"]["user_id"] = metadata_user_id
 
-                    logger.info(f"[callbacks] Injected OAuth token + Claude Code headers for: {model}")
+                    logger.info(f"[callbacks] Injected OAuth token for: {model}")
                     logger.debug(f"[callbacks] metadata.user_id: {metadata_user_id}")
 
         except Exception as e:
@@ -517,28 +471,22 @@ async def _handle_messages_request(request_body: bytes, request_headers: dict = 
                 )
             print(f"[callbacks] Using OAuth token from credentials file (account: {account_uuid})", flush=True)
 
-            # Forward identifying headers from original request (but NOT authorization)
-            # These headers make Anthropic believe the request comes from Claude Code
+            # Forward ALL headers from original request transparently
+            # Let the client (Claude Code) handle header construction
             if request_headers:
-                forward_headers = [
-                    # DO NOT forward "authorization" - we use our own token
-                    "user-agent", "x-app", "anthropic-beta",
-                    "anthropic-dangerous-direct-browser-access",
-                    "anthropic-version",
-                    "x-stainless-arch", "x-stainless-lang", "x-stainless-os",
-                    "x-stainless-package-version", "x-stainless-retry-count",
-                    "x-stainless-runtime", "x-stainless-runtime-version",
-                    "x-stainless-timeout"
-                ]
-                for h in forward_headers:
-                    if h in request_headers:
-                        headers[h] = request_headers[h]
+                # Headers to skip (we set these ourselves or they shouldn't be forwarded)
+                skip_headers = {
+                    "host", "content-length", "transfer-encoding",
+                    "connection", "keep-alive", "authorization"
+                }
+                for h, v in request_headers.items():
+                    if h.lower() not in skip_headers:
+                        headers[h] = v
 
             # Set OUR OAuth token (from credentials file, not from Claude Code's request)
             headers["authorization"] = f"Bearer {oauth_token}"
             headers["anthropic-version"] = request_headers.get("anthropic-version", "2023-06-01") if request_headers else "2023-06-01"
             headers["content-type"] = "application/json"
-            headers["accept"] = "application/json"  # Claude Code sends this
 
             # CRITICAL: Ensure oauth-2025-04-20 beta header is present
             # Without this, Anthropic returns "OAuth authentication is currently not supported"
@@ -549,49 +497,6 @@ async def _handle_messages_request(request_body: bytes, request_headers: dict = 
                 else:
                     headers["anthropic-beta"] = "oauth-2025-04-20"
                 print(f"[callbacks] Added oauth-2025-04-20 to anthropic-beta header", flush=True)
-
-            # ===== Request body normalization to match Claude Code =====
-            # CRITICAL: Anthropic validates that the system prompt starts with
-            # "You are Claude Code, Anthropic's official CLI for Claude."
-            # Claude Code sends this automatically, but non-Claude-Code clients need it injected.
-
-            CLAUDE_CODE_SYSTEM_PREFIX = "You are Claude Code, Anthropic's official CLI for Claude."
-
-            system_prompt = body.get("system")
-            needs_injection = False
-
-            if not system_prompt:
-                # No system prompt at all - inject one
-                needs_injection = True
-            elif isinstance(system_prompt, list):
-                # Check if first block starts with Claude Code identifier
-                if len(system_prompt) == 0:
-                    needs_injection = True
-                else:
-                    first_block = system_prompt[0]
-                    if isinstance(first_block, dict):
-                        text = first_block.get("text", "")
-                        if not text.startswith(CLAUDE_CODE_SYSTEM_PREFIX):
-                            needs_injection = True
-                    else:
-                        needs_injection = True
-            elif isinstance(system_prompt, str):
-                if not system_prompt.startswith(CLAUDE_CODE_SYSTEM_PREFIX):
-                    needs_injection = True
-
-            if needs_injection:
-                print("[callbacks] Injecting Claude Code system prompt prefix", flush=True)
-                claude_code_block = {
-                    "type": "text",
-                    "text": CLAUDE_CODE_SYSTEM_PREFIX,
-                    "cache_control": {"type": "ephemeral"}
-                }
-                if not system_prompt:
-                    body["system"] = [claude_code_block]
-                elif isinstance(system_prompt, list):
-                    body["system"] = [claude_code_block] + system_prompt
-                elif isinstance(system_prompt, str):
-                    body["system"] = [claude_code_block, {"type": "text", "text": system_prompt}]
 
             # Claude Code always includes empty tools array if none specified
             if "tools" not in body:

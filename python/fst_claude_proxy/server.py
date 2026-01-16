@@ -17,11 +17,22 @@ Environment Variables:
     AGENT_REGISTRY_PATH: Path to agent hash registry JSON
     CLAUDE_CREDENTIALS_PATH: Path to Claude OAuth credentials
     DEBUG: Enable verbose logging (default: false)
+
+Note: This server tries to import callbacks_local (with full features) first,
+falling back to callbacks (clean version) if not available.
 """
 
 import logging
 import os
 from pathlib import Path
+
+# Try to import local callbacks with full features, fall back to clean version
+try:
+    from .hooks.callbacks_local import proxy_callbacks
+    _CALLBACKS_SOURCE = "callbacks_local (full features)"
+except ImportError:
+    from .hooks.callbacks import proxy_callbacks
+    _CALLBACKS_SOURCE = "callbacks (clean version)"
 
 # Configure logging based on DEBUG environment variable
 log_level = (
@@ -49,6 +60,7 @@ def main() -> None:
     )
 
     logger.info("[server] fst-claude-proxy starting...")
+    logger.info(f"[server] Callbacks: {_CALLBACKS_SOURCE}")
     logger.info(f"[server] Config: {config_path}")
     logger.info(f"[server] Host: {host}:{port}")
 

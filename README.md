@@ -1,5 +1,19 @@
 # claude-proxy
 
+## Important Notice
+
+This proxy is designed to work **exclusively with Claude Code CLI**. It transparently routes Claude Code requests to different models based on agent fingerprinting and supports multi-account OAuth token management.
+
+**This package:**
+- Does NOT spoof headers or client identity
+- Does NOT inject system prompts
+- Only forwards requests that originate from Claude Code CLI
+- Requires valid Claude Code authentication
+
+We do not condone circumventing Anthropic's terms of service. This tool is for legitimate model routing and observability purposes only.
+
+---
+
 LiteLLM proxy with per-agent model routing and OAuth token injection for Claude Code.
 
 ## Features

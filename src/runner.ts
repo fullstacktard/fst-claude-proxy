@@ -12,7 +12,6 @@ export class ClaudeProxyRunner {
   private configPath?: string;
   private debug: boolean;
   private process: ChildProcess | null = null;
-  private containerId: string | null = null;
 
   constructor(options: RunnerOptions = {}) {
     this.mode = options.mode ?? "docker";
@@ -39,7 +38,7 @@ export class ClaudeProxyRunner {
   async stop(): Promise<void> {
     if (this.mode === "docker") {
       await docker.stopContainer();
-      this.containerId = null;
+      // Container stopped
     } else if (this.process) {
       this.process.kill("SIGTERM");
       this.process = null;
@@ -102,7 +101,7 @@ export class ClaudeProxyRunner {
       env.DEBUG = "true";
     }
 
-    this.containerId = await docker.startContainer({
+    await docker.startContainer({
       port: this.port,
       volumes,
       env,
